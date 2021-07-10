@@ -82,18 +82,30 @@ function App({ cart }) {
 }
 
 export default function Routes() {
+  const cachedCart = window.localStorage.getItem("cart");
   const [cart, setCart] = React.useState([]);
   function handleAddToCart(item) {
     const currentIndex = cart.length;
     const newCart = [...cart, { id: currentIndex + 1, item }];
     setCart(newCart);
+    window.localStorage.setItem("cart", JSON.stringify(newCart));
   }
   function handleRemoveCartItem(event, id) {
     const revisedCart = cart.filter(function (item) {
       return item.id !== id;
     });
     setCart(revisedCart);
+    window.localStorage.setItem("cart", JSON.stringify(revisedCart));
   }
+  React.useEffect(
+    function () {
+      console.info("useEffect for localStorage");
+      if (cachedCart !== null) {
+        setCart(JSON.parse(cachedCart));
+      }
+    },
+    [cachedCart]
+  );
   return (
     <Router>
       <Route path="/" exact>
