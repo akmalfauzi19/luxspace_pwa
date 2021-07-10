@@ -1,4 +1,6 @@
 import React from "react";
+import { BrowserRouter as Router, Route } from "react-router-dom";
+
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import Browse from "./components/Browse";
@@ -8,11 +10,13 @@ import AsideMenu from "./components/AsideMenu";
 import Footer from "./components/Footer";
 import Offline from "./components/Offline";
 import Splash from "./pages/Splash";
+import Profile from "./pages/Profile";
+import Details from "./pages/Details";
+import Cart from "./pages/Cart";
 
-function App() {
+function App({ cart }) {
   const [items, setItems] = React.useState([]);
   const [offlineStatus, setOfflineStatus] = React.useState(!navigator.onLine);
-
   const [isLoading, setIsLoading] = React.useState(true);
 
   function handleOfflineStatus() {
@@ -55,24 +59,53 @@ function App() {
     },
     [offlineStatus]
   );
-  return (
-    <>
-      {isLoading === true ? (
+  if (isLoading === true) {
+    return (
+      <>
         <Splash />
-      ) : (
-        <>
-          {offlineStatus && <Offline />}
-          <Header />
-          <Hero />
-          <Browse />
-          <Arrived items={items} />
-          <Clients />
-          <AsideMenu />
-          <Footer />
-        </>
-      )}
-    </>
-  );
+      </>
+    );
+  } else {
+    return (
+      <>
+        {offlineStatus && <Offline />}
+        <Header mode="light" cart={cart} />
+        <Hero />
+        <Browse />
+        <Arrived items={items} />
+        <Clients />
+        <AsideMenu />
+        <Footer />
+      </>
+    );
+  }
 }
 
-export default App;
+export default function Routes() {
+  const [cart, setCart] = React.useState([]);
+  function handleAddToCart(item) {
+    const currentIndex = cart.length;
+    const newCart = [...cart, { id: currentIndex + 1, item }];
+    setCart(newCart);
+  }
+  function handleRemoveCartItem(event, id) {
+    const revisedCart = cart.filter(function (item) {
+      return item.id !== id;
+    });
+    setCart(revisedCart);
+  }
+  return (
+    <Router>
+      <Route path="/" exact>
+        <App cart={cart} />
+      </Route>
+      <Route path="/profile" exact component={Profile} />
+      <Route path="/details/:id">
+        <Details handleAddToCart={handleAddToCart} cart={cart} />
+      </Route>
+      <Route path="/cart">
+        <Cart cart={cart} handleRemoveCartItem={handleRemoveCartItem} />
+      </Route>
+    </Router>
+  );
+}
